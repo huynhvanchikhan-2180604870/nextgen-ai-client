@@ -2,8 +2,9 @@
 export const API_CONFIG = {
   BASE_URL: "https://nextgen-ai-backend-teov.onrender.com/api/v1",
   WS_URL: "https://nextgen-ai-backend-teov.onrender.com",
-  TIMEOUT: 10000,
+  TIMEOUT: 30000, // Increased to 30 seconds for production
   RETRY_ATTEMPTS: 3,
+  RETRY_DELAY: 1000, // 1 second delay between retries
 };
 
 // API Endpoints

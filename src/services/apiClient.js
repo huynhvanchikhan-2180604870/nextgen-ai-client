@@ -2,6 +2,7 @@ import axios from "axios";
 import { API_CONFIG, ERROR_MESSAGES, HTTP_STATUS } from "../config/api.js";
 
 // Create axios instance
+console.log("🔧 API Client initialized with BASE_URL:", API_CONFIG.BASE_URL);
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
@@ -35,6 +36,7 @@ apiClient.interceptors.request.use(
         `🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`,
         config.data
       );
+      console.log("🔧 Full URL:", config.baseURL + config.url);
     }
 
     return config;

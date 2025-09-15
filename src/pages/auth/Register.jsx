@@ -86,6 +86,10 @@ const Register = () => {
 
     try {
       console.log("🚀 Starting registration for:", formData.email);
+      
+      // Show loading state
+      setErrors({});
+      
       const result = await registerMutation.mutateAsync({
         fullName: formData.name.trim(),
         email: formData.email,
@@ -95,6 +99,7 @@ const Register = () => {
       console.log("✅ Registration result:", result);
       if (result.success) {
         if (result.requiresVerification) {
+          console.log("📧 Redirecting to OTP verification for:", formData.email);
           navigate("/auth/verify-otp", {
             state: { email: formData.email },
           });

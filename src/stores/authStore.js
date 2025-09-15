@@ -91,8 +91,11 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null });
 
         try {
+          console.log("🚀 AuthStore: Starting registration for:", userData.email);
           const response = await authService.register(userData);
-          const { user, tokens } = response;
+          console.log("✅ AuthStore: Registration response:", response);
+          
+          const { user, tokens, requiresVerification } = response;
 
           // If tokens are provided (email verification not required)
           if (tokens) {
@@ -102,6 +105,7 @@ export const useAuthStore = create(
               isLoading: false,
               error: null,
             });
+            console.log("✅ AuthStore: User authenticated immediately");
           } else {
             // Email verification required
             set({
@@ -110,10 +114,16 @@ export const useAuthStore = create(
               isLoading: false,
               error: null,
             });
+            console.log("📧 AuthStore: Email verification required");
           }
 
-          return { success: true, user, requiresVerification: !tokens };
+          return { 
+            success: true, 
+            user, 
+            requiresVerification: requiresVerification || !tokens 
+          };
         } catch (error) {
+          console.error("❌ AuthStore: Registration error:", error);
           set({
             user: null,
             isAuthenticated: false,

@@ -3,20 +3,30 @@ import { api } from "./apiClient.js";
 
 // Authentication Service
 export const authService = {
-  // Register new user
-  async register(userData) {
+  // Register new user with retry logic
+  async register(userData, retryCount = 0) {
     try {
+      console.log(`🚀 Register attempt ${retryCount + 1} for:`, userData.email);
       const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, userData);
 
       // Backend returns: { success: true, data: { userId, email, verificationRequired } }
       // For registration, we don't get tokens yet (need OTP verification)
+      console.log("✅ Register response:", response);
       return {
         success: response.success,
         data: response.data,
         requiresVerification: response.data?.verificationRequired || true,
       };
     } catch (error) {
-      console.error("Register error:", error);
+      console.error(`❌ Register error (attempt ${retryCount + 1}):`, error);
+      
+      // Retry logic for timeout errors
+      if (error.message.includes("Yêu cầu quá thời gian") && retryCount < 2) {
+        console.log(`🔄 Retrying register in 2 seconds... (${retryCount + 1}/2)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return this.register(userData, retryCount + 1);
+      }
+      
       throw new Error(
         error.response?.data?.message || error.message || "Đăng ký thất bại"
       );
