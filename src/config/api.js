@@ -1,7 +1,11 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
-  WS_URL: import.meta.env.VITE_WS_URL || "http://localhost:5001",
+  BASE_URL:
+    import.meta.env.VITE_API_URL ||
+    "https://nextgen-ai-backend-teov.onrender.com/api/v1",
+  WS_URL:
+    import.meta.env.VITE_WS_URL ||
+    "https://nextgen-ai-backend-teov.onrender.com",
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 };
