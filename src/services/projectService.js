@@ -1,5 +1,21 @@
 import { API_CONFIG, API_ENDPOINTS } from "../config/api.js";
 import { api } from "./apiClient.js";
+import { 
+  mockProjects, 
+  mockCategories, 
+  mockTechStacks,
+  getTrendingProjects,
+  getFeaturedProjects,
+  getProjectsByCategory,
+  getProjectsByTechStack,
+  searchProjects
+} from "../data/mockProjects.js";
+import { 
+  mockReviews, 
+  getReviewsByProjectId, 
+  getAverageRating, 
+  getReviewCount 
+} from "../data/mockReviews.js";
 
 // Project Service
 export const projectService = {
@@ -32,7 +48,80 @@ export const projectService = {
       console.log("Projects response:", response);
       return response;
     } catch (error) {
-      throw new Error(error.message || "Lấy danh sách dự án thất bại");
+      console.error("Failed to fetch projects:", error.message);
+      console.log("🔄 Using mock data for projects");
+      
+      // Apply filters to mock data
+      let filteredProjects = [...mockProjects];
+      
+      // Search filter
+      if (params.search) {
+        const searchTerm = params.search.toLowerCase();
+        filteredProjects = filteredProjects.filter(project => 
+          project.title.toLowerCase().includes(searchTerm) ||
+          project.description.toLowerCase().includes(searchTerm) ||
+          project.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      // Category filter
+      if (params.category) {
+        filteredProjects = filteredProjects.filter(project => 
+          project.category === params.category
+        );
+      }
+      
+      // Tech stack filter
+      if (params.techStack) {
+        filteredProjects = filteredProjects.filter(project => 
+          project.techStack.includes(params.techStack)
+        );
+      }
+      
+      // Price filters
+      if (params.minPrice !== undefined) {
+        filteredProjects = filteredProjects.filter(project => 
+          project.price >= params.minPrice
+        );
+      }
+      if (params.maxPrice !== undefined) {
+        filteredProjects = filteredProjects.filter(project => 
+          project.price <= params.maxPrice
+        );
+      }
+      
+      // Rating filter
+      if (params.minRating !== undefined) {
+        filteredProjects = filteredProjects.filter(project => 
+          project.rating >= params.minRating
+        );
+      }
+      
+      // Sort
+      if (params.sortBy) {
+        filteredProjects.sort((a, b) => {
+          switch (params.sortBy) {
+            case 'price':
+              return params.sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+            case 'rating':
+              return params.sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating;
+            case 'downloads':
+              return params.sortOrder === 'asc' ? a.downloads - b.downloads : b.downloads - a.downloads;
+            case 'createdAt':
+              return params.sortOrder === 'asc' ? 
+                new Date(a.createdAt) - new Date(b.createdAt) : 
+                new Date(b.createdAt) - new Date(a.createdAt);
+            default:
+              return 0;
+          }
+        });
+      }
+      
+      return {
+        success: true,
+        data: filteredProjects,
+        message: "Projects loaded from mock data"
+      };
     }
   },
 
@@ -43,7 +132,20 @@ export const projectService = {
       const response = await api.get(url);
       return response;
     } catch (error) {
-      throw new Error(error.message || "Lấy thông tin dự án thất bại");
+      console.error("Failed to fetch project by ID:", error.message);
+      console.log("🔄 Using mock data for project:", id);
+      
+      // Find project in mock data
+      const project = mockProjects.find(p => p._id === id);
+      if (project) {
+        return {
+          success: true,
+          data: project,
+          message: "Project loaded from mock data"
+        };
+      } else {
+        throw new Error("Dự án không tồn tại");
+      }
     }
   },
 
@@ -59,7 +161,34 @@ export const projectService = {
       return response;
     } catch (error) {
       console.error("Failed to fetch featured projects:", error.message);
-      throw error; // Re-throw error instead of returning mock data
+      console.log("🔄 Using mock data for featured projects");
+      
+      // Return mock featured projects
+      const featuredProjects = getFeaturedProjects();
+      return {
+        success: true,
+        data: featuredProjects,
+        message: "Featured projects loaded from mock data"
+      };
+    }
+  },
+
+  // Get trending projects
+  async getTrendingProjects() {
+    try {
+      const response = await api.get(API_ENDPOINTS.PROJECTS.TRENDING || '/projects/trending');
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch trending projects:", error.message);
+      console.log("🔄 Using mock data for trending projects");
+      
+      // Return mock trending projects
+      const trendingProjects = getTrendingProjects();
+      return {
+        success: true,
+        data: trendingProjects,
+        message: "Trending projects loaded from mock data"
+      };
     }
   },
 
@@ -69,7 +198,14 @@ export const projectService = {
       const response = await api.get(API_ENDPOINTS.PROJECTS.CATEGORIES);
       return response;
     } catch (error) {
-      throw new Error(error.message || "Lấy danh mục dự án thất bại");
+      console.error("Failed to fetch categories:", error.message);
+      console.log("🔄 Using mock data for categories");
+      
+      return {
+        success: true,
+        data: mockCategories,
+        message: "Categories loaded from mock data"
+      };
     }
   },
 
@@ -92,7 +228,44 @@ export const projectService = {
       const response = await api.get(url);
       return response;
     } catch (error) {
-      throw new Error(error.message || "Tìm kiếm dự án thất bại");
+      console.error("Failed to search projects:", error.message);
+      console.log("🔄 Using mock data for search:", query);
+      
+      // Search in mock data
+      let results = [...mockProjects];
+      
+      if (query) {
+        const searchTerm = query.toLowerCase();
+        results = results.filter(project => 
+          project.title.toLowerCase().includes(searchTerm) ||
+          project.description.toLowerCase().includes(searchTerm) ||
+          project.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
+          project.techStack.some(tech => tech.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      // Apply additional filters
+      if (filters.category) {
+        results = results.filter(project => project.category === filters.category);
+      }
+      if (filters.techStack) {
+        results = results.filter(project => project.techStack.includes(filters.techStack));
+      }
+      if (filters.minPrice !== undefined) {
+        results = results.filter(project => project.price >= filters.minPrice);
+      }
+      if (filters.maxPrice !== undefined) {
+        results = results.filter(project => project.price <= filters.maxPrice);
+      }
+      if (filters.minRating !== undefined) {
+        results = results.filter(project => project.rating >= filters.minRating);
+      }
+      
+      return {
+        success: true,
+        data: results,
+        message: "Search results loaded from mock data"
+      };
     }
   },
 
@@ -184,7 +357,30 @@ export const projectService = {
       );
       return response;
     } catch (error) {
-      throw new Error(error.message || "Lấy đánh giá dự án thất bại");
+      console.error("Failed to fetch project reviews:", error.message);
+      console.log("🔄 Using mock data for project reviews:", projectId);
+      
+      // Get mock reviews for the project
+      const allReviews = getReviewsByProjectId(projectId);
+      
+      // Apply pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedReviews = allReviews.slice(startIndex, endIndex);
+      
+      return {
+        success: true,
+        data: {
+          reviews: paginatedReviews,
+          pagination: {
+            page,
+            limit,
+            total: allReviews.length,
+            totalPages: Math.ceil(allReviews.length / limit)
+          }
+        },
+        message: "Project reviews loaded from mock data"
+      };
     }
   },
 
