@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - NextGenAI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        button {
+            background: #00f5ff;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #00d4e6;
+        }
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Clear Cache - NextGenAI</h1>
+        <p>Script này sẽ clear tất cả cache và storage để fix lỗi localhost:5000</p>
+        
+        <button onclick="clearAllCache()">Clear All Cache</button>
+        <button onclick="clearLocalStorage()">Clear LocalStorage</button>
+        <button onclick="clearSessionStorage()">Clear SessionStorage</button>
+        <button onclick="unregisterServiceWorkers()">Unregister Service Workers</button>
+        <button onclick="clearIndexedDB()">Clear IndexedDB</button>
+        <button onclick="clearCacheStorage()">Clear Cache Storage</button>
+        
+        <div id="log" class="log"></div>
+        
+        <p><strong>Hướng dẫn:</strong></p>
+        <ol>
+            <li>Click "Clear All Cache"</li>
+            <li>Đóng tab này</li>
+            <li>Mở lại trang chính</li>
+            <li>Kiểm tra Console để xem BASE_URL</li>
+        </ol>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+            log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLocalStorage() {
+            try {
+                localStorage.clear();
+                addLog('✅ LocalStorage cleared', 'success');
+            } catch (error) {
+                addLog(`❌ Error clearing LocalStorage: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearSessionStorage() {
+            try {
+                sessionStorage.clear();
+                addLog('✅ SessionStorage cleared', 'success');
+            } catch (error) {
+                addLog(`❌ Error clearing SessionStorage: ${error.message}`, 'error');
+            }
+        }
+        
+        function unregisterServiceWorkers() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    if (registrations.length === 0) {
+                        addLog('ℹ️ No service workers found', 'info');
+                        return;
+                    }
+                    
+                    registrations.forEach(registration => {
+                        registration.unregister().then(() => {
+                            addLog(`✅ Service worker unregistered: ${registration.scope}`, 'success');
+                        }).catch(error => {
+                            addLog(`❌ Error unregistering service worker: ${error.message}`, 'error');
+                        });
+                    });
+                });
+            } else {
+                addLog('ℹ️ Service workers not supported', 'info');
+            }
+        }
+        
+        function clearIndexedDB() {
+            if ('indexedDB' in window) {
+                indexedDB.databases().then(databases => {
+                    if (databases.length === 0) {
+                        addLog('ℹ️ No IndexedDB databases found', 'info');
+                        return;
+                    }
+                    
+                    databases.forEach(db => {
+                        indexedDB.deleteDatabase(db.name).onsuccess = () => {
+                            addLog(`✅ IndexedDB cleared: ${db.name}`, 'success');
+                        };
+                    });
+                }).catch(error => {
+                    addLog(`❌ Error clearing IndexedDB: ${error.message}`, 'error');
+                });
+            } else {
+                addLog('ℹ️ IndexedDB not supported', 'info');
+            }
+        }
+        
+        function clearCacheStorage() {
+            if ('caches' in window) {
+                caches.keys().then(cacheNames => {
+                    if (cacheNames.length === 0) {
+                        addLog('ℹ️ No cache storage found', 'info');
+                        return;
+                    }
+                    
+                    cacheNames.forEach(cacheName => {
+                        caches.delete(cacheName).then(() => {
+                            addLog(`✅ Cache cleared: ${cacheName}`, 'success');
+                        }).catch(error => {
+                            addLog(`❌ Error clearing cache: ${error.message}`, 'error');
+                        });
+                    });
+                });
+            } else {
+                addLog('ℹ️ Cache storage not supported', 'info');
+            }
+        }
+        
+        function clearAllCache() {
+            addLog('🧹 Starting cache clearing process...', 'info');
+            
+            clearLocalStorage();
+            clearSessionStorage();
+            unregisterServiceWorkers();
+            clearIndexedDB();
+            clearCacheStorage();
+            
+            setTimeout(() => {
+                addLog('🎉 Cache clearing completed!', 'success');
+                addLog('📝 Please close this tab and refresh the main page', 'warning');
+            }, 2000);
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            addLog('🚀 Cache clearing tool loaded', 'info');
+            addLog('💡 Click "Clear All Cache" to start', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -19,14 +19,16 @@ export const authService = {
       };
     } catch (error) {
       console.error(`❌ Register error (attempt ${retryCount + 1}):`, error);
-      
+
       // Retry logic for timeout errors
       if (error.message.includes("Yêu cầu quá thời gian") && retryCount < 2) {
-        console.log(`🔄 Retrying register in 2 seconds... (${retryCount + 1}/2)`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(
+          `🔄 Retrying register in 2 seconds... (${retryCount + 1}/2)`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         return this.register(userData, retryCount + 1);
       }
-      
+
       throw new Error(
         error.response?.data?.message || error.message || "Đăng ký thất bại"
       );
@@ -53,14 +55,8 @@ export const authService = {
       };
 
       console.log("🔐 Transformed response:", transformedResponse);
-      console.log(
-        "🔐 Access token:",
-        accessToken?.substring(0, 50) + "..."
-      );
-      console.log(
-        "🔐 Refresh token:",
-        refreshToken?.substring(0, 50) + "..."
-      );
+      console.log("🔐 Access token:", accessToken?.substring(0, 50) + "...");
+      console.log("🔐 Refresh token:", refreshToken?.substring(0, 50) + "...");
 
       // Store tokens and user data
       localStorage.setItem("accessToken", accessToken);

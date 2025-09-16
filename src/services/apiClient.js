@@ -3,6 +3,7 @@ import { API_CONFIG, ERROR_MESSAGES, HTTP_STATUS } from "../config/api.js";
 
 // Create axios instance
 console.log("🔧 API Client initialized with BASE_URL:", API_CONFIG.BASE_URL);
+console.log("🔧 Full API_CONFIG:", API_CONFIG);
 const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
@@ -37,6 +38,8 @@ apiClient.interceptors.request.use(
         config.data
       );
       console.log("🔧 Full URL:", config.baseURL + config.url);
+      console.log("🔧 Base URL from config:", config.baseURL);
+      console.log("🔧 URL from config:", config.url);
     }
 
     return config;
